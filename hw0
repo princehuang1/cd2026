@@ -1,0 +1,85 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct Node {
+    char ch;
+    int count;
+    struct Node* next;
+} Node;
+
+Node* char_map[256] = {NULL}; 
+
+Node* head = NULL;
+Node* tail = NULL;
+
+void process_char(char c);
+void print_list();
+void free_list();
+
+int main() {
+    FILE *file = fopen(__FILE__, "r");
+    if (file == NULL) {
+        printf("無法開啟檔案！\n");
+        return 1;
+    }
+
+    int c;
+    while ((c = fgetc(file)) != EOF) {
+        if (c > 32 && c <= 126) {
+            process_char((char)c);
+        }
+    }
+
+    fclose(file);
+    print_list();
+    printf("Time complexity 為 O(1)\n"); //加分題
+    free_list();
+
+    return 0;
+}
+
+void process_char(char c) {
+    unsigned char uc = (unsigned char)c;
+
+    if (char_map[uc] != NULL) {
+        char_map[uc]->count++;
+    } else {
+        Node* new_node = (Node*)malloc(sizeof(Node));
+        if (new_node == NULL) {
+            printf("記憶體配置失敗！\n");
+            exit(1);
+        }
+        new_node->ch = c;
+        new_node->count = 1;
+        new_node->next = NULL;
+
+        // 新節點加到Linked-list尾端
+        if (head == NULL) {
+            head = new_node;
+            tail = new_node;
+        } else {
+            tail->next = new_node;
+            tail = new_node;
+        }
+
+        char_map[uc] = new_node;
+    }
+}
+
+void print_list() {
+    Node* current = head;
+    while (current != NULL) {
+        printf("%c : %d\n", current->ch, current->count);
+        current = current->next;
+    }
+}
+
+void free_list() {
+    Node* current = head;
+    while (current != NULL) {
+        Node* temp = current;
+        current = current->next;
+        free(temp);
+    }
+}
